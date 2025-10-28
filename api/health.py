@@ -1,9 +1,13 @@
-"""Health check."""
+"""Health check endpoint."""
 import json
 
 def handler(request):
-    """Health check endpoint."""
-    return json.dumps({
-        'status': 'ok',
-        'message': 'API running'
-    }), 200, {'Content-Type': 'application/json'}
+    """Health check handler."""
+    return {
+        'statusCode': 200,
+        'headers': {'Content-Type': 'application/json'},
+        'body': json.dumps({
+            'status': 'ok',
+            'message': 'API is running'
+        })
+    }
