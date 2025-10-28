@@ -1,0 +1,9 @@
+openai>=1.0.0
+anthropic>=0.39.0
+google-generativeai>=0.8.3
+python-dotenv>=1.0.1
+requests>=2.32.3
+pydantic>=2.9.2
+urllib3<3.0.0
+streamlit>=1.32.0
+
