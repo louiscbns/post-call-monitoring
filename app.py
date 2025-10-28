@@ -114,9 +114,9 @@ def analyze_call(call_id: str, model: str):
             status_text.text("Récupération des données de l'appel...")
             progress_bar.progress(0.2)
             
-            # Analyse l'appel
+            # Analyse l'appel avec logging
             time.sleep(0.5)  # Simulation de délai pour l'UI
-            result = system.analyze_call_from_id(call_id)
+            result = system.analyze_call_from_id(call_id, logger=status_text.text)
             
             progress_bar.progress(0.8)
             status_text.text("Finalisation de l'analyse...")

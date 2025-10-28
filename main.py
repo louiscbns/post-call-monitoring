@@ -17,29 +17,54 @@ class PostCallMonitoringSystem:
         self.detailed_analyzer = DetailedAnalyzer(model_name)
         self.rounded_api = RoundedAPIClient()
     
-    def analyze_call_from_id(self, call_id: str) -> Optional[DetailedAnalysis]:
-        """Analyse un appel depuis son ID en utilisant l'API Call Rounded."""
+    def analyze_call_from_id(self, call_id: str, logger=None) -> Optional[DetailedAnalysis]:
+        """Analyse un appel depuis son ID en utilisant l'API Call Rounded.
+        
+        Args:
+            call_id: ID de l'appel à analyser
+            logger: Fonction de logging optionnelle (ex: st.warning)
+        """
         try:
+            if logger:
+                logger(f"Récupération de l'appel {call_id}...")
+            
             # Récupère les données depuis Call Rounded
             raw_data = self.rounded_api.get_call(call_id)
             if not raw_data:
-                print(f"Impossible de récupérer l'appel {call_id}")
+                error_msg = f"Impossible de récupérer l'appel {call_id} depuis l'API Call Rounded"
+                print(error_msg)
+                if logger:
+                    logger(f"⚠️ {error_msg}")
                 return None
+            
+            if logger:
+                logger("Transformation des données...")
             
             # Transforme les données
             call_data = self.rounded_api.transform_call_data(raw_data)
             
+            if logger:
+                logger("Construction de la requête d'analyse...")
+            
             # Construit la requête d'analyse
             request = self._build_analysis_request(call_data)
+            
+            if logger:
+                logger("Lancement de l'analyse...")
             
             # Analyse l'appel
             return self.analyze_call(request)
         except RuntimeError as e:
-            print(f"\n❌ Erreur critique: {e}")
-            print("🚫 L'analyse ne peut pas continuer sans un client LLM fonctionnel.")
+            error_msg = f"Erreur critique LLM: {e}"
+            print(f"\n❌ {error_msg}")
+            if logger:
+                logger(f"🚫 {error_msg}")
             return None
         except Exception as e:
-            print(f"\n❌ Erreur inattendue: {e}")
+            error_msg = f"Erreur inattendue: {e}"
+            print(f"\n❌ {error_msg}")
+            if logger:
+                logger(f"❌ {error_msg}")
             return None
     
     def analyze_call(self, request: CallAnalysisRequest) -> DetailedAnalysis:
