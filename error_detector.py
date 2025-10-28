@@ -84,11 +84,12 @@ Réponds UNIQUEMENT avec un JSON valide au format:
             role_emoji = "👤" if turn.role == "user" else "🤖"
             conv_text += f"{role_emoji} [{turn.role}]: {turn.content}\n\n"
         
-        # Format tool results
+        # Format tool results avec timestamps
         tools_text = "RÉSULTATS OUTILS:\n"
         for tool_result in request.tool_results:
             status = "✅" if tool_result.success else "❌"
-            tools_text += f"{status} {tool_result.tool_name}:\n"
+            timestamp_str = f" (à {tool_result.timestamp})" if tool_result.timestamp else ""
+            tools_text += f"{status} {tool_result.tool_name}{timestamp_str}:\n"
             tools_text += f"  Input: {json.dumps(tool_result.input, indent=2)}\n"
             
             if not tool_result.success:
