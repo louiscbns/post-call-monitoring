@@ -91,8 +91,19 @@ GOOGLE_API_KEY=votre_clé_google (optionnel)
 
 def analyze_call(call_id: str, model: str):
     """Analyse un appel."""
-    with st.spinner("🔍 Analyse en cours..."):
-        try:
+    error_container = st.empty()
+    
+    try:
+        # Vérification des variables d'environnement
+        if not os.getenv("ROUNDED_API_KEY"):
+            error_container.error("❌ ROUNDED_API_KEY non configurée")
+            return
+        
+        if not os.getenv("OPENAI_API_KEY"):
+            error_container.error("❌ OPENAI_API_KEY non configurée")
+            return
+        
+        with st.spinner("🔍 Analyse en cours..."):
             # Initialise le système
             system = PostCallMonitoringSystem(model_name=model)
             
@@ -132,11 +143,25 @@ def analyze_call(call_id: str, model: str):
             else:
                 progress_bar.empty()
                 status_text.empty()
-                st.error("❌ L'analyse a échoué. Veuillez vérifier le Call ID et votre configuration.")
+                
+                # Message d'erreur plus détaillé
+                error_container.error("❌ L'analyse a échoué. Raisons possibles:")
+                with st.expander("🔍 Détails de l'erreur"):
+                    st.write("**Problèmes possibles:**")
+                    st.markdown("""
+                    1. **Call ID invalide** - Vérifiez que l'ID de l'appel existe
+                    2. **Clés API invalides** - Vérifiez vos variables d'environnement
+                    3. **Problème de connexion** - L'API Call Rounded pourrait être inaccessible
+                    4. **Limite de taux** - Trop de requêtes à l'API OpenAI
+                    """)
+                    st.write(f"**Call ID testé:** `{call_id}`")
+                    st.write(f"**Modèle utilisé:** `{model}`")
         
-        except Exception as e:
-            st.error(f"❌ Erreur lors de l'analyse: {str(e)}")
+    except Exception as e:
+        error_container.error(f"❌ Erreur lors de l'analyse: {str(e)}")
+        with st.expander("🔍 Détails de l'erreur technique"):
             st.exception(e)
+            st.write("**Type d'erreur:**", type(e).__name__)
 
 
 def display_analysis(analysis, call_id: str):
