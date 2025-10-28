@@ -6,5 +6,4 @@ requests>=2.32.3
 pydantic>=2.9.2
 urllib3<3.0.0
 streamlit>=1.32.0
-flask>=3.0.0
 

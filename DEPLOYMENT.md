@@ -1,159 +1,167 @@
-# 🚀 Guide de Déploiement
+# 🚀 Guide de déploiement
 
-## Option 1 : Streamlit Cloud (Recommandé)
+## ⚠️ Pourquoi pas Vercel ?
 
-**Streamlit Cloud est gratuit et parfait pour les applications Streamlit.**
+Vercel est conçu pour des applications statiques et des fonctions serverless (serverless functions). Streamlit nécessite un serveur Python actif, ce qui n'est pas compatible avec le modèle serverless de Vercel.
 
-### Étapes de déploiement :
+## ✅ Solutions recommandées
 
-1. **Connecter votre repo GitHub à Streamlit Cloud**
-   - Allez sur : https://streamlit.io/cloud
-   - Cliquez sur "New app"
-   - Connectez votre compte GitHub
-   - Sélectionnez le repository : `louiscbns/post-call-monitoring`
+### 1. Streamlit Cloud (Recommandé - Gratuit) ⭐
 
-2. **Configuration**
-   - **Branch** : main
-   - **Main file path** : `app.py`
-   - **Python version** : 3.9+
+Streamlit Cloud est la solution la plus simple pour déployer des applications Streamlit.
 
-3. **Variables d'environnement**
-   Dans Streamlit Cloud, ajoutez vos secrets :
-   ```
-   ROUNDED_API_KEY=votre_clé_rounded
-   OPENAI_API_KEY=votre_clé_openai
-   ANTHROPIC_API_KEY=votre_clé_anthropic (optionnel)
-   GOOGLE_API_KEY=votre_clé_google (optionnel)
-   ```
-
-4. **Déploiement automatique**
-   - Streamlit Cloud déploie automatiquement à chaque push
-   - Votre app sera accessible sur : `https://<votre-app>.streamlit.app`
-
-### Avantages :
+#### Avantages
 - ✅ Gratuit
-- ✅ Déploiement automatique depuis GitHub
-- ✅ Gestion native des secrets
-- ✅ HTTPS automatique
-- ✅ Pas de configuration serveur
+- ✅ Déploiement en 1 clic
+- ✅ Mises à jour automatiques à chaque push
+- ✅ SSL automatique
+- ✅ Pas de configuration requise
+
+#### Étapes de déploiement
+
+1. **Connecter votre repository GitHub**
+   - Allez sur [share.streamlit.io](https://share.streamlit.io)
+   - Connectez-vous avec votre compte GitHub
+   - Cliquez sur "New app"
+
+2. **Configurer l'application**
+   - Repository : `louiscbns/post-call-monitoring`
+   - Branch : `main`
+   - Main file path : `app.py`
+
+3. **Ajouter les secrets**
+   - Dans les paramètres de l'app, ajoutez vos clés API comme secrets :
+     - `ROUNDED_API_KEY`
+     - `OPENAI_API_KEY`
+     - `ANTHROPIC_API_KEY` (optionnel)
+     - `GOOGLE_API_KEY` (optionnel)
+
+4. **Déployer**
+   - Cliquez sur "Deploy"
+   - Streamlit Cloud déploie automatiquement votre app
+   - L'URL sera : `https://post-call-monitoring-xxx.streamlit.app`
+
+#### Mises à jour automatiques
+À chaque push sur GitHub, l'application se met à jour automatiquement !
 
 ---
 
-## Option 2 : Vercel (API seulement)
+### 2. Render (Alternative)
 
-Si vous voulez vraiment utiliser Vercel, vous devez convertir l'app en API REST avec Flask ou FastAPI.
+Render est une plateforme cloud qui supporte les applications Streamlit.
 
-### Créer une API Flask
+#### Configuration nécessaire
 
-Créez un fichier `api.py` :
+1. **Créer un fichier `render.yaml`** :
 
-```python
-from flask import Flask, request, jsonify
-from main import PostCallMonitoringSystem
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
-app = Flask(__name__)
-
-@app.route('/api/analyze', methods=['POST'])
-def analyze_call():
-    data = request.json
-    call_id = data.get('call_id')
-    model = data.get('model', 'gpt-4o-mini')
-    
-    try:
-        system = PostCallMonitoringSystem(model_name=model)
-        result = system.analyze_call_from_id(call_id)
-        
-        if result:
-            return jsonify({
-                'success': True,
-                'call_id': result.call_id,
-                'problem_detected': result.problem_detected,
-                'problem_type': result.problem_type,
-                'tags': result.tags,
-                'summary': result.summary
-            })
-        else:
-            return jsonify({
-                'success': False,
-                'error': 'Analysis failed'
-            }), 400
-    except Exception as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
-
-@app.route('/health', methods=['GET'])
-def health():
-    return jsonify({'status': 'ok'})
+```yaml
+services:
+  - type: web
+    name: post-call-monitoring
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run app.py --server.port=$PORT --server.address=0.0.0.0
+    envVars:
+      - key: ROUNDED_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
 ```
 
-### Configuration Vercel
+2. **Déployer sur Render**
+   - Connectez votre repo GitHub
+   - Render détecte automatiquement le fichier `render.yaml`
+   - Ajoutez vos variables d'environnement
 
-Créez `vercel.json` :
+---
 
-```json
-{
-  "version": 2,
-  "builds": [
-    {
-      "src": "api.py",
-      "use": "@vercel/python"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "api.py"
-    }
-  ],
-  "env": {
-    "ROUNDED_API_KEY": "@rounded_api_key",
-    "OPENAI_API_KEY": "@openai_api_key"
-  }
-}
-```
+### 3. Railway (Alternative)
 
-### Déploiement sur Vercel
+Railway offre un déploiement simple avec support Python.
+
+#### Étapes
+1. Créez un compte sur [Railway.app](https://railway.app)
+2. Nouveau projet → "Deploy from GitHub repo"
+3. Sélectionnez votre repository
+4. Ajoutez vos variables d'environnement
+5. Railway déploie automatiquement
+
+---
+
+### 4. Heroku (Payant)
+
+Pour déployer sur Heroku :
+
+1. **Installer Heroku CLI**
+
+2. **Créer les fichiers nécessaires**
 
 ```bash
-npm i -g vercel
-vercel
+# Procfile
+echo "web: streamlit run app.py --server.port=\$PORT --server.address=0.0.0.0" > Procfile
+
+# runtime.txt
+echo "python-3.11.0" > runtime.txt
+```
+
+3. **Déployer**
+
+```bash
+heroku create votre-app-nom
+git push heroku main
+heroku config:set ROUNDED_API_KEY=votre_clé
+heroku config:set OPENAI_API_KEY=votre_clé
 ```
 
 ---
 
-## Option 3 : Railway ou Render
+## 🔐 Sécurité des clés API
 
-Ces plateformes supportent nativement les applications Streamlit.
+### Sur Streamlit Cloud
+1. Allez dans les paramètres de votre app
+2. Cliquez sur "Secrets"
+3. Ajoutez vos clés :
+```toml
+ROUNDED_API_KEY="votre_clé"
+OPENAI_API_KEY="votre_clé"
+```
 
-### Railway
-
-1. Créez un compte sur https://railway.app
-2. New Project → Deploy from GitHub
-3. Sélectionnez votre repo
-4. Ajoutez les variables d'environnement
-5. Votre app sera déployée automatiquement
-
-### Render
-
-1. Créez un compte sur https://render.com
-2. New → Web Service
-3. Connectez GitHub
-4. Configuration :
-   - Build Command : `pip install -r requirements.txt`
-   - Start Command : `streamlit run app.py`
-5. Déploiement automatique
+### Sur les autres plateformes
+Ajoutez les variables d'environnement dans les paramètres du déploiement.
 
 ---
 
-## Recommandation
+## 📝 Résumé des options
 
-**Utilisez Streamlit Cloud** - c'est la solution la plus simple et la plus adaptée pour votre application Streamlit.
+| Plateforme | Coût | Complexité | Recommandation |
+|------------|------|------------|----------------|
+| **Streamlit Cloud** | Gratuit | ⭐ Facile | ⭐⭐⭐⭐⭐ |
+| Render | Gratuit (limité) | ⭐⭐ Moyen | ⭐⭐⭐⭐ |
+| Railway | $$ | ⭐⭐ Moyen | ⭐⭐⭐ |
+| Heroku | $$ | ⭐⭐⭐ Difficile | ⭐⭐ |
 
-Souhaitez-vous que je vous guide à travers le déploiement sur Streamlit Cloud ?
+---
+
+## 🎯 Recommandation finale
+
+Pour déployer rapidement votre application, utilisez **Streamlit Cloud** :
+1. Gratuit
+2. Le plus simple
+3. Optimisé pour Streamlit
+4. Déploiement automatique
+
+**URL** : https://share.streamlit.io
+
+---
+
+## 📞 Support
+
+Pour toute question sur le déploiement, consultez :
+- Documentation Streamlit Cloud : https://docs.streamlit.io/streamlit-community-cloud
+- Documentation Render : https://render.com/docs
+- Documentation Railway : https://docs.railway.app
 
