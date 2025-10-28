@@ -1,81 +1,50 @@
 """API Vercel - Analyser un appel."""
 import json
-import sys
 import os
-import traceback
-
-# Ajouter parent au path
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.dirname(current_dir)
-sys.path.insert(0, parent_dir)
-
-# Import au niveau module (plus fiable)
-try:
-    from main import PostCallMonitoringSystem
-except ImportError as e:
-    print(f"Import error: {e}")
-    PostCallMonitoringSystem = None
+import sys
 
 def handler(request):
-    """Handler Vercel Python - Format: retourne un dict."""
+    """Handler pour analyser un appel."""
+    
+    # Test simple d'abord
     try:
-        print("=== API Analyze Called ===")
+        # Parser le body
+        body_data = {}
+        if hasattr(request, 'body'):
+            try:
+                body_data = json.loads(request.body) if isinstance(request.body, str) else request.body
+            except:
+                pass
+        elif hasattr(request, 'get_json'):
+            body_data = request.get_json(silent=True) or {}
         
-        # Parse body
-        try:
-            if hasattr(request, 'body'):
-                if isinstance(request.body, str):
-                    body = json.loads(request.body)
-                else:
-                    body = request.body
-            elif hasattr(request, 'json'):
-                body = request.json
-            else:
-                body = {}
-            print(f"Body: {body}")
-        except Exception as e:
-            print(f"Parse error: {e}")
-            body = {}
+        call_id = body_data.get('call_id', '')
+        model = body_data.get('model', 'gpt-4o-mini')
         
-        call_id = body.get('call_id') or body.get('callId', '')
-        model = body.get('model', 'gpt-4o-mini')
-        
-        print(f"Call ID: {call_id}, Model: {model}")
-        
+        # Si pas de call_id, retourner une erreur
         if not call_id:
             return {
                 'statusCode': 400,
-                'headers': {'Content-Type': 'application/json'},
-                'body': json.dumps({
-                    'success': False,
-                    'error': 'call_id is required'
-                })
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({'success': False, 'error': 'call_id is required'})
             }
         
-        if PostCallMonitoringSystem is None:
-            return {
-                'statusCode': 500,
-                'headers': {'Content-Type': 'application/json'},
-                'body': json.dumps({
-                    'success': False,
-                    'error': 'PostCallMonitoringSystem not loaded'
-                })
-            }
+        # Ajouter le parent au path
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        parent_dir = os.path.dirname(current_dir)
+        if parent_dir not in sys.path:
+            sys.path.insert(0, parent_dir)
         
-        # Analyser
-        print("Starting analysis...")
+        # Importer et analyser
+        from main import PostCallMonitoringSystem
+        
         system = PostCallMonitoringSystem(model_name=model)
-        print("System created")
         result = system.analyze_call_from_id(call_id)
-        print(f"Result: {result}")
         
         if result:
             return {
                 'statusCode': 200,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*'
-                },
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
                 'body': json.dumps({
                     'success': True,
                     'call_id': result.call_id,
@@ -89,22 +58,21 @@ def handler(request):
         else:
             return {
                 'statusCode': 400,
-                'headers': {'Content-Type': 'application/json'},
-                'body': json.dumps({
-                    'success': False,
-                    'error': 'Failed to analyze call'
-                })
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({'success': False, 'error': 'Analysis failed'})
             }
             
     except Exception as e:
-        print(f"Exception: {e}")
-        print(traceback.format_exc())
+        import traceback
+        error_detail = str(e)
+        tb = traceback.format_exc()
+        
         return {
             'statusCode': 500,
-            'headers': {'Content-Type': 'application/json'},
+            'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
             'body': json.dumps({
                 'success': False,
-                'error': str(e),
-                'traceback': traceback.format_exc()
+                'error': error_detail,
+                'details': tb[:500]  # Limite les détails
             })
         }
