@@ -1,12 +1,9 @@
 """Module d'analyse détaillée avec questions/réponses."""
-from typing import Dict, List, Any, Optional, Tuple
+from typing import List, Any
 import json
-import re
 from models import (
     CallAnalysisRequest,
     DetailedAnalysis,
-    AnalysisStep,
-    Question,
     CallStatistics
 )
 from llm_clients import LLMClient
@@ -19,112 +16,46 @@ class DetailedAnalyzer:
     def __init__(self, model_name: str = "gpt-4o"):
         self.llm = LLMClient(model_name)
         self.model_name = model_name
-        self.ERROR_TAGS = Config.get_error_tags_values()
     
     def analyze(self, request: CallAnalysisRequest) -> DetailedAnalysis:
         """Effectue l'analyse détaillée de l'appel."""
-        # Ne génère plus les étapes d'analyse ni les recommandations
-        steps = []
-
-        # Extraction des statistiques enrichies (inclut failure_reasons et failure_description)
         statistics = self._extract_statistics(request)
         
-        # Détermine s'il y a un problème basé sur failure_reasons
-        problem_detected = statistics.failure_reasons is not None and len(statistics.failure_reasons) > 0
-        
-        # Détermine le type de problème depuis failure_reasons (utilise le premier si plusieurs)
-        if problem_detected and statistics.failure_reasons:
-            problem_type = statistics.failure_reasons[0]  # Utilise le premier failure_reason comme type
-        else:
-            problem_type = "none"
-        
-        # Génère les tags depuis failure_reasons ou call_tags
+        problem_detected = bool(statistics.failure_reasons)
+        problem_type = statistics.failure_reasons[0] if problem_detected else "none"
         tags = self._generate_tags_from_statistics(statistics)
-        
-        # Génère le résumé depuis failure_description ou failure_reasons
-        summary = self._generate_summary_from_statistics(statistics, tags)
-
-        # Pas de recommandations
-        recommendations = []
+        summary = self._generate_summary_from_statistics(statistics)
 
         return DetailedAnalysis(
             call_id=request.call_id,
             problem_type=problem_type,
             problem_detected=problem_detected,
-            steps=steps,
+            steps=[],
             tags=tags,
             summary=summary,
-            recommendations=recommendations,
-            confidence=None,  # Pas de confiance calculée, on utilise les statistiques directement
+            recommendations=[],
+            confidence=None,
             statistics=statistics
         )
     
     def _generate_tags_from_statistics(self, statistics: CallStatistics) -> List[str]:
-        """Génère les tags appropriés à partir des statistiques."""
-        tags = []
-        
-        # Utilise failure_reasons comme tags principaux
-        if statistics.failure_reasons:
-            tags.extend(statistics.failure_reasons)
-        
-        # Si pas d'erreurs, retourne une liste vide
-        return tags
+        """Génère les tags à partir des failure_reasons."""
+        return statistics.failure_reasons or []
     
-    def _generate_summary_from_statistics(self, statistics: CallStatistics, tags: List[str]) -> str:
+    def _generate_summary_from_statistics(self, statistics: CallStatistics) -> str:
         """Génère le résumé de l'appel à partir des statistiques."""
-        
-        # Si pas d'erreur, résumé positif
         if not statistics.failure_reasons:
             return "Aucun problème détecté dans cet appel."
         
-        # Si on a une description d'échec, l'utiliser
         if statistics.failure_description:
             return statistics.failure_description
         
-        # Sinon, générer un résumé à partir des failure_reasons
+        # Générer un résumé à partir des failure_reasons
         if len(statistics.failure_reasons) == 1:
-            error_tag = statistics.failure_reasons[0]
-            return f"Erreur détectée: {error_tag.replace('_', ' ').title()}"
+            return f"Erreur détectée: {statistics.failure_reasons[0].replace('_', ' ').title()}"
         else:
             errors_list = ", ".join([r.replace('_', ' ').title() for r in statistics.failure_reasons])
             return f"Plusieurs erreurs détectées: {errors_list}"
-    
-    def _normalize_tag(self, tag: Any) -> Optional[str]:
-        """Normalise un tag pour la comparaison (convertit en minuscules, remplace espaces par underscores)."""
-        if not isinstance(tag, str):
-            return None
-        
-        # Normaliser : minuscules, remplacer espaces multiples par un seul underscore
-        normalized = tag.lower().strip()
-        # Remplacer espaces, tirets, et autres séparateurs par underscores
-        normalized = re.sub(r'[\s\-\.]+', '_', normalized)
-        # Supprimer les underscores multiples
-        normalized = re.sub(r'_+', '_', normalized)
-        # Supprimer les underscores en début et fin
-        normalized = normalized.strip('_')
-        
-        return normalized if normalized else None
-    
-    def _match_tag(self, tag: str, valid_tags: List[str]) -> Optional[str]:
-        """Trouve le tag valide correspondant à un tag normalisé."""
-        normalized = self._normalize_tag(tag)
-        if not normalized:
-            return None
-        
-        # Correspondance exacte après normalisation
-        for valid_tag in valid_tags:
-            if self._normalize_tag(valid_tag) == normalized:
-                return valid_tag
-        
-        # Correspondance partielle (le tag normalisé contient ou est contenu dans un tag valide)
-        for valid_tag in valid_tags:
-            valid_normalized = self._normalize_tag(valid_tag)
-            if valid_normalized and (normalized in valid_normalized or valid_normalized in normalized):
-                # Vérifier que c'est une correspondance significative (pas juste un mot commun)
-                if len(normalized) > 3 and len(valid_normalized) > 3:
-                    return valid_tag
-        
-        return None
     
     def _extract_single_question(self, question_config: dict, conversation_text: str, tools_text: str, failure_note: str = "") -> Any:
         """Extrait une seule question avec un appel LLM dédié."""
@@ -154,8 +85,7 @@ class DetailedAnalyzer:
             return question_config.get("default_value")
     
     def _validate_and_normalize_value(self, value: Any, question_config: dict) -> Any:
-        """Valide et normalise une valeur selon la configuration de la question."""
-        name = question_config["name"]
+        """Valide une valeur selon la configuration de la question (vérifie le format et les options)."""
         response_type = question_config["response_type"]
         nullable = question_config.get("nullable", False)
         default_value = question_config.get("default_value")
@@ -164,51 +94,67 @@ class DetailedAnalyzer:
         
         # Gérer null
         if value is None or (isinstance(value, str) and value.lower() == "null"):
-            if nullable:
-                return None
-            else:
-                return default_value if default_value is not None else []
+            return None if nullable else (default_value if default_value is not None else [])
         
         # Validation selon le type
         if response_type == "select":
-            # Validation: doit être dans la liste des options
+            # Vérifier que la valeur est exactement dans les options
             if options and field_key:
                 option_values = [opt[field_key] for opt in options]
-                matched = self._match_tag(value, option_values) if isinstance(value, str) else None
-                return matched if matched else default_value
+                if isinstance(value, str) and value in option_values:
+                    return value
+                return default_value
             return value
         
         elif response_type == "multiselect":
-            # Validation: liste d'options
+            # Vérifier que c'est une liste et que toutes les valeurs sont dans les options
             if not isinstance(value, list):
-                if nullable:
-                    return None
-                return []
+                return None if nullable else []
             
             if options and field_key:
-                valid_values = []
                 option_values = [opt[field_key] for opt in options]
-                for item in value:
-                    matched = self._match_tag(item, option_values) if isinstance(item, str) else None
-                    if matched and matched not in valid_values:
-                        valid_values.append(matched)
+                valid_values = [item for item in value if isinstance(item, str) and item in option_values]
                 
                 if not nullable and len(valid_values) == 0:
                     return []
                 return valid_values if valid_values else (None if nullable else [])
             return value
         
-        elif response_type == "text":
-            # Validation: texte non vide
+        elif response_type == "string":
+            # Validation: string non vide
             if isinstance(value, str):
                 value = value.strip()
-                if len(value) < 5:
+                if len(value) == 0:
                     return None if nullable else default_value
                 return value
             return None if nullable else default_value
         
-        elif response_type == "text_multiline":
-            # Validation: texte multiligne
+        elif response_type == "number":
+            # Validation: nombre
+            if isinstance(value, (int, float)):
+                return value
+            if isinstance(value, str):
+                try:
+                    # Essayer de convertir en float pour supporter les décimales
+                    return float(value) if '.' in value else int(value)
+                except ValueError:
+                    return None if nullable else default_value
+            return None if nullable else default_value
+        
+        elif response_type == "boolean":
+            # Validation: boolean
+            if isinstance(value, bool):
+                return value
+            if isinstance(value, str):
+                lower_val = value.lower().strip()
+                if lower_val in ("true", "1", "yes", "oui"):
+                    return True
+                elif lower_val in ("false", "0", "no", "non"):
+                    return False
+            return None if nullable else default_value
+        
+        elif response_type in ("text", "text_multiline"):  # Support rétrocompatibilité
+            # Validation: texte non vide
             if isinstance(value, str):
                 value = value.strip()
                 if len(value) < 5:

@@ -166,7 +166,8 @@ class Config:
     # Base prompt global léger, réutilisé pour toutes les extractions
     BASE_SYSTEM_PROMPT: str = """Tu es un expert en analyse de conversations clients.
 Tu extrais des statistiques de manière fiable, concise et strictement au format JSON demandé.
-Ne réponds qu’en JSON valide, sans texte additionnel.
+CRITIQUE: Utilise EXACTEMENT les valeurs fournies dans la liste des options (copie-colle les valeurs exactes).
+Ne réponds qu'en JSON valide, sans texte additionnel.
 """
 
     @staticmethod
@@ -179,30 +180,48 @@ Ne réponds qu’en JSON valide, sans texte additionnel.
         description = question_config["description"]
         response_type = question_config["response_type"]
         nullable = question_config.get("nullable", False)
+        options = question_config.get("options")
+        field_key = question_config.get("field_key")
+
+        # Construire la liste des valeurs exactes si des options sont disponibles
+        valid_values_text = ""
+        if options and field_key:
+            valid_values = [opt[field_key] for opt in options]
+            valid_values_text = f"\n\nVALEURS EXACTES AUTORISÉES (utilise EXACTEMENT ces valeurs) :\n{', '.join(valid_values)}\n"
 
         # Format JSON attendu court et instruction brève
         if response_type == "select":
             json_format = f'"{name}": "valeur"'
-            instruction = "Sélectionne une seule valeur précise."
+            instruction = f"Sélectionne UNE seule valeur EXACTE{(' parmi les valeurs autorisées' if valid_values_text else '')}."
         elif response_type == "multiselect":
             json_format = f'"{name}": ["valeur1", "valeur2"]' + (" | null" if nullable else "")
-            instruction = "Sélectionne toutes les valeurs pertinentes (liste vide si aucune)."
-        elif response_type == "text":
+            instruction = f"Sélectionne toutes les valeurs pertinentes{(' parmi les valeurs autorisées' if valid_values_text else '')} (liste vide [] si aucune). Utilise EXACTEMENT les valeurs fournies."
+        elif response_type == "string":
             json_format = f'"{name}": "texte"' + (" | null" if nullable else "")
-            instruction = "Fournis un court texte explicatif."
-        elif response_type == "text_multiline":
-            json_format = f'"{name}": "ligne1\\nligne2"' + (" | null" if nullable else "")
-            instruction = "Liste chaque élément sur une nouvelle ligne."
+            instruction = "Fournis un texte explicatif."
+        elif response_type == "number":
+            json_format = f'"{name}": 123' + (" | null" if nullable else "")
+            instruction = "Fournis un nombre."
+        elif response_type == "boolean":
+            json_format = f'"{name}": true' + (" | null" if nullable else "")
+            instruction = "Fournis true ou false."
+        elif response_type in ("text", "text_multiline"):  # Support rétrocompatibilité
+            json_format = f'"{name}": "texte"' + (" | null" if nullable else "")
+            instruction = "Fournis un texte explicatif."
         else:
             json_format = f'"{name}": null'
             instruction = "Retourne au bon format JSON."
 
         system_prompt = Config.BASE_SYSTEM_PROMPT
 
+        # Règle absolue seulement pour select/multiselect avec options
+        absolute_rule = ""
+        if response_type in ("select", "multiselect") and valid_values_text:
+            absolute_rule = "\nRÈGLE ABSOLUE: Copie-colle EXACTEMENT les valeurs depuis la liste fournie. Pas de variations, pas de reformulation.\n"
+
         user_prompt = f"""Tâche: Extraire l'attribut: {name}
 But: {description}
-Consignes: {instruction}
-
+Consignes: {instruction}{valid_values_text}{absolute_rule}
 Réponds UNIQUEMENT avec un JSON valide au format:
 {{
     {json_format}
