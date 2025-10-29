@@ -72,6 +72,7 @@ class CallStatistics(BaseModel):
     user_sentiment: Optional[str] = None  # Sentiment utilisateur
     failure_reasons: Optional[List[str]] = None  # Raisons d'échec (multiselect) - null si pas d'échec
     failure_description: Optional[str] = None  # Raison d'échec (texte) - null si pas d'échec
+    call_tags: Optional[List[str]] = None  # Tags de suivi des informations échangées (multiselect) - None si pas extrait, [] si liste vide
 
 
 class DetailedAnalysis(BaseModel):

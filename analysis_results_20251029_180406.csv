@@ -1,0 +1,138 @@
+call_id,model_used,call_reason,user_sentiment,failure_reasons,failure_description,user_questions,call_tags
+16510542-f4fa-46ae-b16a-6ba15f5a45da,gemini-2.0-flash,get_appointment_info,neutre,,,,date_de_naissance; nom; prenom; date_de_chirurgie; intitule_chirurgie; patient_trouve
+16510542-f4fa-46ae-b16a-6ba15f5a45da,gemini-2.5-flash,get_appointment_info,neutre,,,,intitule_chirurgie; patient_trouve; nom; prenom; date_de_naissance; rdv_confirme
+16510542-f4fa-46ae-b16a-6ba15f5a45da,gpt-4.1,get_appointment_info,neutre,,,,rdv_confirme; date_de_naissance; nom; prenom; patient_trouve; date_de_chirurgie; intitule_chirurgie
+16510542-f4fa-46ae-b16a-6ba15f5a45da,gpt-4.1-mini,get_appointment_info,satisfait,,,,date_de_naissance; nom; prenom; patient_trouve; date_de_chirurgie; intitule_chirurgie; rdv_confirme
+16510542-f4fa-46ae-b16a-6ba15f5a45da,gpt-5,get_appointment_info,neutre,,,,date_de_naissance; nom; patient_trouve; rdv_confirme; date_de_chirurgie; intitule_chirurgie
+16510542-f4fa-46ae-b16a-6ba15f5a45da,gpt-5-mini,confirm_appointment,satisfait,,,,date_de_naissance; nom; prenom; patient_trouve; date_de_chirurgie; intitule_chirurgie; rdv_confirme
+37ea75da-8101-4005-99f9-96d793f1ca27,gemini-2.0-flash,book_appointment,neutre,,,"Vous pouvez répéter ?
+Plus tard ?
+Non avez-vous des disponibilités le mercredi 29 octobre ?
+Oui, avec qui j'ai rendez-vous ?",intitule_chirurgie; nom_du_chirurgien; date_de_chirurgie; anticoagulants; disponibilites_enoncees; nom; prenom; date_de_naissance; rdv_confirme; appel_transfere
+37ea75da-8101-4005-99f9-96d793f1ca27,gemini-2.5-flash,book_appointment,neutre,,,"Non ?
+Non ?
+Non ?
+Non ?
+Non ?
+Non ?
+Vous pouvez répéter ?
+Plus tard ?
+Autre date, un mercredi ?
+Avez-vous des disponibilités le mercredi 29 octobre ?
+Avec qui j'ai rendez-vous ?",nom_du_chirurgien; date_de_chirurgie; intitule_chirurgie; anticoagulants; disponibilites_enoncees; nom; prenom; date_de_naissance; rdv_confirme; appel_transfere
+37ea75da-8101-4005-99f9-96d793f1ca27,gpt-4.1,book_appointment,neutre,,,"Vous pouvez répéter ?
+Plus tard ?
+Non avez-vous des disponibilités le mercredi 29 octobre ?
+Oui, avec qui j'ai rendez-vous ?",intitule_chirurgie; nom_du_chirurgien; date_de_chirurgie; anticoagulants; disponibilites_enoncees; date_de_naissance; nom; prenom; rdv_confirme; appel_transfere
+37ea75da-8101-4005-99f9-96d793f1ca27,gpt-4.1-mini,book_appointment,frustre,,,"Vous pouvez répéter ?
+Plus tard ?
+Non avez-vous des disponibilités le mercredi 29 octobre ?
+Oui, avec qui j'ai rendez-vous ?",intitule_chirurgie; nom_du_chirurgien; date_de_chirurgie; anticoagulants; disponibilites_enoncees; rdv_confirme; date_de_naissance; nom; prenom; appel_transfere
+37ea75da-8101-4005-99f9-96d793f1ca27,gpt-5,book_appointment,neutre,,,"Vous pouvez répéter ?
+Plus tard ?
+Non avez-vous des disponibilités le mercredi 29 octobre ?
+Oui, avec qui j'ai rendez-vous ?",intitule_chirurgie; nom_du_chirurgien; date_de_chirurgie; anticoagulants; disponibilites_enoncees; rdv_confirme; nom; prenom; date_de_naissance; appel_transfere; patient_trouve
+37ea75da-8101-4005-99f9-96d793f1ca27,gpt-5-mini,book_appointment,neutre,,,"Prise de rendez-vous anesthési.
+Vous pouvez répéter ?
+Plus tard ?
+Non, 14h01, autre date, un mercredi.
+Non avez-vous des disponibilités le mercredi 29 octobre ?
+Oui, avec qui j'ai rendez-vous ?",intitule_chirurgie; nom_du_chirurgien; date_de_chirurgie; anticoagulants; disponibilites_enoncees; rdv_confirme; nom; prenom; date_de_naissance; patient_trouve; appel_transfere
+4289531f-7cb6-4c33-b827-bcc33e4ad871,gemini-2.0-flash,get_appointment_info,neutre,,,Voilà je voudrais savoir si il faut 2 rendez-vous pour 2 opérations ou un seul suffit vu qu'elles sont raccrochées ?,appel_transfere
+4289531f-7cb6-4c33-b827-bcc33e4ad871,gemini-2.5-flash,other_requests,neutre,,,Voilà je voudrais savoir si il faut 2 rendez-vous pour 2 opérations ou un seul suffit vu qu'elles sont raccrochées ?,appel_transfere
+4289531f-7cb6-4c33-b827-bcc33e4ad871,gpt-4.1,get_appointment_info,confus,,,Voilà je voudrais savoir si il faut 2 rendez-vous pour 2 opérations ou un seul suffit vu qu'elles sont raccrochées ?,appel_transfere
+4289531f-7cb6-4c33-b827-bcc33e4ad871,gpt-4.1-mini,get_appointment_info,neutre,,,Voilà je voudrais savoir si il faut 2 rendez-vous pour 2 opérations ou un seul suffit vu qu'elles sont raccrochées ?,appel_transfere
+4289531f-7cb6-4c33-b827-bcc33e4ad871,gpt-5,get_appointment_info,neutre,,,Voilà je voudrais savoir si il faut 2 rendez-vous pour 2 opérations ou un seul suffit vu qu'elles sont raccrochées ?,appel_transfere
+4289531f-7cb6-4c33-b827-bcc33e4ad871,gpt-5-mini,get_appointment_info,neutre,,,Voilà je voudrais savoir si il faut 2 rendez-vous pour 2 opérations ou un seul suffit vu qu'elles sont raccrochées ?,appel_transfere
+76dec7d1-7c2c-46e5-a73c-5820dd74e0b9,gemini-2.0-flash,get_appointment_info,neutre,,,Je voudrais savoir si mon rendez-vous est bien programmé le 29 octobre à 10h30 ?,date_de_chirurgie; intitule_chirurgie; nom; prenom; date_de_naissance; patient_trouve
+76dec7d1-7c2c-46e5-a73c-5820dd74e0b9,gemini-2.5-flash,get_appointment_info,neutre,,,"Je voudrais savoir si mon rendez-vous est bien programmé le 29 octobre à 10h30 ?
+Non ?",date_de_chirurgie; intitule_chirurgie; patient_trouve; nom; prenom; date_de_naissance; rdv_confirme
+76dec7d1-7c2c-46e5-a73c-5820dd74e0b9,gpt-4.1,get_appointment_info,neutre,,,Je voudrais savoir si mon rendez-vous est bien programmé le 29 octobre à 10h30 ?,date_de_chirurgie; intitule_chirurgie; nom; prenom; date_de_naissance; patient_trouve
+76dec7d1-7c2c-46e5-a73c-5820dd74e0b9,gpt-4.1-mini,get_appointment_info,neutre,,,Je voudrais savoir si mon rendez-vous est bien programmé le 29 octobre à 10h30 ?,date_de_chirurgie; intitule_chirurgie; date_de_naissance; nom; prenom; patient_trouve
+76dec7d1-7c2c-46e5-a73c-5820dd74e0b9,gpt-5,get_appointment_info,neutre,,,"Je voudrais savoir si mon rendez-vous est bien programmé le 29 octobre à 10h30 ?
+Non ?",date_de_chirurgie; intitule_chirurgie; patient_trouve; nom; prenom; date_de_naissance; rdv_confirme
+76dec7d1-7c2c-46e5-a73c-5820dd74e0b9,gpt-5-mini,get_appointment_info,neutre,,,"Je voudrais savoir si mon rendez-vous est bien programmé le 29 octobre à 10h30 ?
+Vérifier son horaire.
+Non, mon numéro est le 0772049356.
+Le 07 janvier 2022.
+Galli, GALY.
+Oui.
+Non ?
+Non, bonne journée.",date_de_chirurgie; intitule_chirurgie; disponibilites_enoncees; patient_trouve; nom; prenom; date_de_naissance
+7adeb607-390e-44c2-a974-47c848f35dfe,gemini-2.0-flash,confirm_appointment,neutre,,,,nom_du_chirurgien; date_de_chirurgie; rdv_confirme; appel_transfere
+7adeb607-390e-44c2-a974-47c848f35dfe,gemini-2.5-flash,confirm_appointment,neutre,,,,nom_du_chirurgien; date_de_chirurgie; appel_transfere
+7adeb607-390e-44c2-a974-47c848f35dfe,gpt-4.1,confirm_appointment,confus,,,,nom_du_chirurgien; date_de_chirurgie; rdv_confirme; appel_transfere
+7adeb607-390e-44c2-a974-47c848f35dfe,gpt-4.1-mini,confirm_appointment,neutre,,,,nom_du_chirurgien; date_de_chirurgie; rdv_confirme; appel_transfere
+7adeb607-390e-44c2-a974-47c848f35dfe,gpt-5,confirm_appointment,neutre,,,,nom_du_chirurgien; date_de_chirurgie; rdv_confirme; appel_transfere
+7adeb607-390e-44c2-a974-47c848f35dfe,gpt-5-mini,confirm_appointment,neutre,,,,nom_du_chirurgien; date_de_chirurgie; rdv_confirme; appel_transfere
+8cd5d571-0507-45db-9481-6200a89d379f,gemini-2.0-flash,book_appointment,positif,entity_detection_erreur,L'outil 'entity_detection' a échoué car il n'y avait pas de transcription secondaire disponible.,"Mon opération ?
+Dites-moi, le 8 octobre, à quelle heure ?
+RER Ben dites-moi ces 2 dates si à que la disponibilité s'il vous plaît ?
+Oui alors c'est le 14 octobre à 16h00 16h30.
+Oui oui voilà, ça s'appelle CNCT, c'est ça ?
+Non, pour l'instant non. Je peux, je peux, je je poserai les questions à l'anesthésie.",intitule_chirurgie; nom_du_chirurgien; date_de_chirurgie; anticoagulants; disponibilites_enoncees; nom; prenom; date_de_naissance; rdv_confirme
+8cd5d571-0507-45db-9481-6200a89d379f,gemini-2.5-flash,book_appointment,satisfait,entity_detection_erreur,L'outil de détection d'entités a échoué car aucune transcription secondaire n'était disponible pour le traitement.,"Mon opération ?
+Non ?
+Non ?
+Oui alors attendez-vous avez été trop vite le le premier rendez-vous c'est que c'est vous me dites le 8 octobre.
+Dites-moi, le 8 octobre, à quelle heure ?
+Ben dites-moi ces 2 dates si à que la disponibilité s'il vous plaît ?
+ça s'appelle CNCT, c'est ça ?",intitule_chirurgie; nom_du_chirurgien; date_de_chirurgie; anticoagulants; disponibilites_enoncees; date_de_naissance; nom; prenom; rdv_confirme; patient_trouve
+8cd5d571-0507-45db-9481-6200a89d379f,gpt-4.1,book_appointment,satisfait,entity_detection_erreur,"Le créneau initialement proposé et accepté par l'appelant (8 octobre à 14h10) n'était finalement plus disponible, obligeant l'appelant à choisir une nouvelle date. Cela a entraîné une interruption dans la prise de rendez-vous et nécessité de reformuler des propositions de créneaux.","Mon opération ?
+Dites-moi, le 8 octobre, à quelle heure ?
+RER Ben dites-moi ces 2 dates si à que la disponibilité s'il vous plaît ?
+Oui oui, voilà, ça s'appelle CNCT, c'est ça ?",intitule_chirurgie; nom_du_chirurgien; date_de_chirurgie; anticoagulants; disponibilites_enoncees; date_de_naissance; nom; prenom; rdv_confirme
+8cd5d571-0507-45db-9481-6200a89d379f,gpt-4.1-mini,book_appointment,neutre,entity_detection_erreur,"L'échec détecté concerne l'outil 'entity_detection' qui a échoué en raison de l'absence de transcription secondaire disponible, ce qui a empêché son bon fonctionnement.","Mon opération ?
+Dites-moi, le 8 octobre, à quelle heure ?
+RER Ben dites-moi ces 2 dates si à que la disponibilité s'il vous plaît ?",intitule_chirurgie; nom_du_chirurgien; date_de_chirurgie; anticoagulants; disponibilites_enoncees; rdv_confirme; date_de_naissance; nom; prenom; adresse
+8cd5d571-0507-45db-9481-6200a89d379f,gpt-5,book_appointment,satisfait,entity_detection_erreur; erreur_tool,"L’outil entity_detection a échoué initialement avec l’erreur « No secondary transcription available. You should use the one you received earlier. », indiquant une tentative d’utiliser une transcription secondaire inexistante avant de réussir lors d’un nouvel essai.","Mon opération ?
+Dites-moi, le 8 octobre, à quelle heure ?
+RER Ben dites-moi ces 2 dates si à que la disponibilité s'il vous plaît ?
+Oui, très très bien. Oui oui, ce que j'avais. Oui oui voilà, ça s'appelle CNCT, c'est ça ?",nom_du_chirurgien; date_de_chirurgie; intitule_chirurgie; anticoagulants; disponibilites_enoncees; rdv_confirme; nom; prenom; date_de_naissance
+8cd5d571-0507-45db-9481-6200a89d379f,gpt-5-mini,book_appointment,positif,erreur_tool; erreur_extraction_entite; entity_detection_erreur; informations_manquantes; autres,"L'outil entity_detection a échoué en raison de l'absence d'une transcription secondaire requise (erreur: 'No secondary transcription available. You should use the one you received earlier'), empêchant la détection complète des entités dans l'appel.","Mon opération ?
+Dites-moi, le 8 octobre, à quelle heure ?
+RER Ben dites-moi ces 2 dates si à que la disponibilité s'il vous plaît ?
+Oui alors c'est le 14 octobre à 16h00 16h30.
+Le 11 mars, le 1103, 1951.
+Alors, point de base POUEYDEBAT.
+Ginette GINE.
+Oui, très très bien. Oui oui, ce que j'avais. Oui oui voilà, ça s'appelle CNCT, c'est ça ?
+Non, pour l'instant non. Je peux, je peux, je je poserai les questions à l'anesthésie. Merci beaucoup.",intitule_chirurgie; nom_du_chirurgien; date_de_chirurgie; anticoagulants; disponibilites_enoncees; rdv_confirme; date_de_naissance; nom; prenom; patient_trouve
+9cfca680-334b-42c4-ae51-6f45f94fe436,gemini-2.0-flash,book_appointment,neutre,entity_detection_erreur,L'outil entity_detection a échoué car il n'y avait pas de transcription secondaire disponible.,"Oui je voudrais un rendez-vous s'il vous plaît avec l'anesthésiste.
+Alors vous dites le 17 ?
+La Ra je passe une radio donc je prends un autre rendez-vous avant.",intitule_chirurgie; date_de_chirurgie; nom_du_chirurgien; anticoagulants; disponibilites_enoncees; nom; prenom; date_de_naissance; rdv_confirme; appel_transfere
+9cfca680-334b-42c4-ae51-6f45f94fe436,gemini-2.5-flash,book_appointment,neutre,erreur_tool; erreur_extraction_entite; entity_detection_erreur,"L'outil 'entity_detection' a échoué car aucune transcription secondaire n'était disponible, indiquant qu'il aurait dû utiliser la transcription principale.",Alors vous dites le 17 ?,
+9cfca680-334b-42c4-ae51-6f45f94fe436,gpt-4.1,book_appointment,neutre,entity_detection_erreur,"L'appelant a accepté un rendez-vous pour le 17 novembre à 14h, mais à la fin de l'appel, il indique qu'il doit passer une radio avant et souhaite donc prendre un autre rendez-vous. L'agent doit transférer l'appel au secrétariat pour modifier le rendez-vous initialement réservé, ce qui montre que la prise de rendez-vous n'a pas abouti comme prévu.",Alors vous dites le 17 ?,nom_du_chirurgien; date_de_chirurgie; intitule_chirurgie; anticoagulants; disponibilites_enoncees; nom; prenom; date_de_naissance; rdv_confirme; appel_transfere
+9cfca680-334b-42c4-ae51-6f45f94fe436,gpt-4.1-mini,book_appointment,neutre,entity_detection_erreur,"L'outil d'entité secondaire pour la transcription a échoué, ce qui a empêché la détection complète des entités nécessaires à la réservation finale du rendez-vous.",Alors vous dites le 17 ?,intitule_chirurgie; date_de_chirurgie; nom_du_chirurgien; anticoagulants; disponibilites_enoncees; date_de_naissance; nom; prenom; rdv_confirme; appel_transfere
+9cfca680-334b-42c4-ae51-6f45f94fe436,gpt-5,book_appointment,neutre,entity_detection_erreur; erreur_tool,"L’outil entity_detection a échoué initialement (No secondary transcription available), empêchant l’extraction d’entités à ce moment-là.",Alors vous dites le 17 ?,nom_du_chirurgien; date_de_chirurgie; intitule_chirurgie; anticoagulants; disponibilites_enoncees; prenom; nom; date_de_naissance; rdv_confirme; appel_transfere
+9cfca680-334b-42c4-ae51-6f45f94fe436,gpt-5-mini,book_appointment,neutre,erreur_tool; erreur_extraction_entite; entity_detection_erreur,"L'outil entity_detection a échoué en indiquant l'erreur suivante : « No secondary transcription available. You should use the one you received earlier. ». Il manque une transcription secondaire attendue par l'outil, empêchant l'extraction correcte d'entités lors de cette étape.","Oui je voudrais un rendez-vous s'il vous plaît avec l'anesthésiste.
+Alors, c'est une prothèse de du genou genou gauche qui aura lieu le 9 décembre.
+C'est le docteur Guire.
+Oui.
+Au cabinet, au cabinet.
+Alors vous dites le 17 ?
+Le.
+Alors 14 h, ça me convient très bien, oui.
+Oui.
+Le 25 octobre 1949.
+LORET.
+MICHE accent grave, LE.
+Oui, oui, oui, oui, non. La Ra je passe une radio donc je prends un autre rendez-vous avant.",intitule_chirurgie; date_de_chirurgie; nom_du_chirurgien; anticoagulants; disponibilites_enoncees; rdv_confirme; nom; prenom; date_de_naissance; patient_trouve; appel_transfere
+c4739276-0207-4bb4-b3e1-dabe55319c10,gemini-2.0-flash,get_appointment_info,neutre,patient_non_trouve,,,date_de_naissance; nom; patient_non_trouve; appel_transfere
+c4739276-0207-4bb4-b3e1-dabe55319c10,gemini-2.5-flash,get_appointment_info,neutre,,,,date_de_naissance; patient_non_trouve; nom
+c4739276-0207-4bb4-b3e1-dabe55319c10,gpt-4.1,get_appointment_info,confus,,"L'agent n'a pas réussi à identifier l'appelant malgré plusieurs tentatives de vérification des informations personnelles (numéro de téléphone, date de naissance, nom de famille), ce qui a empêché la confirmation du rendez-vous et a conduit à une proposition de redirection vers le secrétariat.",,date_de_naissance; nom; rdv_confirme; patient_non_trouve
+c4739276-0207-4bb4-b3e1-dabe55319c10,gpt-4.1-mini,get_appointment_info,frustre,,"L'agent n'a pas réussi à identifier l'appelant malgré la demande de plusieurs informations personnelles (numéro de téléphone, date de naissance, nom de famille). L'appelant a corrigé la date de naissance, mais l'agent a continué à avoir des difficultés à retrouver le dossier. Finalement, l'agent propose de rediriger vers le secrétariat, indiquant un échec dans l'identification du client.",,date_de_naissance; nom; patient_non_trouve
+c4739276-0207-4bb4-b3e1-dabe55319c10,gpt-5,get_appointment_info,neutre,,,,date_de_naissance; nom; patient_non_trouve; appel_transfere
+c4739276-0207-4bb4-b3e1-dabe55319c10,gpt-5-mini,confirm_appointment,neutre,,,,date_de_chirurgie; date_de_naissance; nom; prenom; patient_non_trouve; disponibilites_enoncees
+fa789f5d-8665-46ca-ab36-e26b360642a1,gemini-2.0-flash,book_appointment,neutre,,,,intitule_chirurgie; appel_transfere
+fa789f5d-8665-46ca-ab36-e26b360642a1,gemini-2.5-flash,book_appointment,neutre,,,,intitule_chirurgie; appel_transfere
+fa789f5d-8665-46ca-ab36-e26b360642a1,gpt-4.1,book_appointment,neutre,,,,intitule_chirurgie; appel_transfere
+fa789f5d-8665-46ca-ab36-e26b360642a1,gpt-4.1-mini,book_appointment,neutre,,,,intitule_chirurgie; appel_transfere
+fa789f5d-8665-46ca-ab36-e26b360642a1,gpt-5,book_appointment,neutre,,,,intitule_chirurgie; appel_transfere
+fa789f5d-8665-46ca-ab36-e26b360642a1,gpt-5-mini,book_appointment,neutre,,,,intitule_chirurgie; patient_trouve; appel_transfere
+fb96d81d-fef2-4f68-b438-07a9fe97e65e,gemini-2.0-flash,cancel_appointment,neutre,patient_non_trouve; entity_detection_erreur,"L'agent n'arrive pas à trouver le rendez-vous de l'appelant malgré les informations fournies (numéro de téléphone, date de naissance et nom).",,date_de_naissance; nom; patient_non_trouve
+fb96d81d-fef2-4f68-b438-07a9fe97e65e,gemini-2.5-flash,cancel_appointment,neutre,entity_detection_erreur; patient_non_trouve,L'agent n'a pas pu trouver le client avec les informations fournies.,,patient_non_trouve; nom; date_de_naissance
+fb96d81d-fef2-4f68-b438-07a9fe97e65e,gpt-4.1,cancel_appointment,neutre,patient_non_trouve; entity_detection_erreur,"L'agent n'a pas réussi à retrouver le dossier du client malgré la confirmation du numéro de téléphone, de la date de naissance et de l'orthographe du nom. L'appelant a dû répéter ses informations, mais l'identification du patient a échoué, empêchant l'annulation du rendez-vous.",,nom; date_de_naissance; patient_non_trouve
+fb96d81d-fef2-4f68-b438-07a9fe97e65e,gpt-4.1-mini,cancel_appointment,neutre,patient_non_trouve; entity_detection_erreur,"L'agent n'a pas réussi à retrouver le rendez-vous du client malgré la confirmation du numéro de téléphone, de la date de naissance et de l'orthographe du nom de famille.",,date_de_naissance; nom; patient_non_trouve
+fb96d81d-fef2-4f68-b438-07a9fe97e65e,gpt-5,cancel_appointment,neutre,patient_non_trouve; erreur_tool; entity_detection_erreur,"L’agent n’a pas réussi à retrouver le dossier du patient pour annuler le rendez-vous malgré le numéro de téléphone (06 84 31 08 46), la date de naissance (02/09/1960) et le nom de famille (« Lanoë/LANOE », mention du tréma). Échec d’identification/recherche patient, possiblement lié à l’orthographe/diacritiques du nom ou à une recherche outillée défaillante.",,patient_non_trouve; nom; date_de_naissance
+fb96d81d-fef2-4f68-b438-07a9fe97e65e,gpt-5-mini,cancel_appointment,neutre,erreur_tool; entity_detection_erreur; patient_non_trouve; erreur_extraction_entite,"L'outil d'entity_detection a échoué (erreur: 'No secondary transcription available'), et l'agent n'a pas réussi à retrouver le patient malgré la confirmation du numéro de téléphone, date de naissance et orthographe du nom ; la recherche a renvoyé aucun résultat.",,patient_trouve; nom; prenom; date_de_naissance; nom_du_chirurgien; patient_non_trouve

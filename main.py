@@ -1,8 +1,7 @@
 """Point d'entrée principal pour l'analyse post-appel."""
 import asyncio
 from typing import Optional
-from models import CallAnalysisRequest, CallMetadata, ConversationTurn, ToolResult, InitialAnalysis, DetailedAnalysis
-from error_detector import ErrorDetector
+from models import CallAnalysisRequest, CallMetadata, ConversationTurn, ToolResult, DetailedAnalysis
 from detailed_analyzer import DetailedAnalyzer
 from rounded_api import RoundedAPIClient
 import json
@@ -11,9 +10,8 @@ import json
 class PostCallMonitoringSystem:
     """Système principal d'analyse post-appel."""
     
-    def __init__(self, model_name: str = "gpt-4o-mini"):
+    def __init__(self, model_name: str = "gpt-4o"):
         self.model_name = model_name
-        self.error_detector = ErrorDetector(model_name)
         self.detailed_analyzer = DetailedAnalyzer(model_name)
         self.rounded_api = RoundedAPIClient()
     
@@ -70,34 +68,16 @@ class PostCallMonitoringSystem:
     def analyze_call(self, request: CallAnalysisRequest) -> DetailedAnalysis:
         """Analyse un appel avec la requête fournie."""
         try:
-            # ÉTAPE 1: Détection initiale d'erreurs
-            print("🔍 Détection initiale d'erreurs...")
-            initial_analysis = self.error_detector.detect_errors(request)
+            # Analyse directe (inclut l'extraction des statistiques avec failure_reasons et failure_description)
+            print("📊 Analyse en cours...")
+            detailed = self.detailed_analyzer.analyze(request)
             
-            print(f"Erreur détectée: {initial_analysis.has_error}")
-            print(f"Type: {initial_analysis.error_type}")
-            print(f"Confiance: {initial_analysis.confidence}")
-            
-            # Extraction des statistiques (même si pas d'erreur) - intégré dans detailed_analyzer
-            statistics = self.detailed_analyzer._extract_statistics(request)
-            
-            if not initial_analysis.has_error:
-                # Pas d'erreur détectée, analyse basique
-                return DetailedAnalysis(
-                    call_id=request.call_id,
-                    problem_type="none",
-                    problem_detected=False,
-                    steps=[],
-                    tags=[],
-                    summary="Aucun problème détecté dans cet appel.",
-                    recommendations=[],
-                    confidence=initial_analysis.confidence,
-                    statistics=statistics
-                )
-            
-            # ÉTAPE 2: Analyse détaillée conditionnelle
-            print("\n📊 Analyse détaillée en cours...")
-            detailed = self.detailed_analyzer.analyze(request, initial_analysis)
+            # Log concis du résultat (valeurs exactes)
+            if detailed.problem_detected:
+                reasons = ", ".join(detailed.statistics.failure_reasons or [])
+                print(f"✅ Analyse terminée - Problème détecté: {reasons}")
+            else:
+                print("✅ Analyse terminée - Aucun problème détecté")
             
             return detailed
         except RuntimeError as e:
@@ -170,50 +150,53 @@ class PostCallMonitoringSystem:
     
     def print_analysis(self, analysis: DetailedAnalysis):
         """Affiche l'analyse de manière lisible."""
-        print("\n" + "="*60)
-        print("📋 ANALYSE DÉTAILLÉE DE L'APPEL")
-        print("="*60)
-        print(f"\n🆔 Call ID: {analysis.call_id}")
-        print(f"⚠️  Problème détecté: {analysis.problem_detected}")
-        print(f"🏷️  Type: {analysis.problem_type}")
-        print(f"🏷️  Tags: {', '.join(analysis.tags)}")
-        if analysis.confidence is not None:
-            confidence_pct = int(analysis.confidence * 100)
-            print(f"🎯 Confiance: {confidence_pct}%")
+        print("\n" + "="*70)
+        print(f"📋 ANALYSE - Call ID: {analysis.call_id}")
+        print("="*70)
         
-        print(f"\n📝 Résumé:")
-        print(f"   {analysis.summary}")
+        # Résumé concis
+        print(f"📝 {analysis.summary}")
         
-        # Afficher les statistiques enrichies
+        # Statistiques enrichies - format compact avec valeurs exactes
         if analysis.statistics:
-            print("\n" + "-"*60)
-            print("📊 STATISTIQUES ENRICHIES")
-            print("-"*60)
-            
+            # Motif de l'appel
             if analysis.statistics.call_reason:
-                print(f"📞 Motif de l'appel: {analysis.statistics.call_reason}")
+                print(f"Motif de l'appel : {analysis.statistics.call_reason}")
             
+            # Score de satisfaction
             if analysis.statistics.user_sentiment:
-                print(f"😊 Sentiment utilisateur: {analysis.statistics.user_sentiment}")
+                print(f"Score de Satisfaction : {analysis.statistics.user_sentiment}")
             
+            # Erreurs si présentes (format compact avec valeurs exactes)
+            if analysis.statistics.failure_reasons and len(analysis.statistics.failure_reasons) > 0:
+                reasons_str = ", ".join(analysis.statistics.failure_reasons)
+                print(f"❌ Erreurs: {reasons_str}")
+                
+                if analysis.statistics.failure_description:
+                    # Description sur plusieurs lignes si nécessaire
+                    desc_lines = analysis.statistics.failure_description.split('\n')
+                    if len(desc_lines) == 1:
+                        print(f"   └─ {analysis.statistics.failure_description}")
+                    else:
+                        print("   └─ Description:")
+                        for line in desc_lines:
+                            if line.strip():
+                                print(f"      {line.strip()}")
+            
+            # Questions de l'appelant
             if analysis.statistics.user_questions:
-                print(f"\n❓ Questions posées par l'appelant:")
-                # Afficher chaque question sur une ligne
+                print(f"\n❓ Questions de l'appelant:")
                 questions_lines = analysis.statistics.user_questions.split('\n')
                 for q in questions_lines:
                     if q.strip():
                         print(f"   • {q.strip()}")
             
-            if analysis.statistics.failure_reasons:
-                print(f"\n❌ Raisons d'échec (multiselect):")
-                for reason in analysis.statistics.failure_reasons:
-                    print(f"   • {reason}")
-            
-            if analysis.statistics.failure_description:
-                print(f"\n📄 Description de l'échec:")
-                print(f"   {analysis.statistics.failure_description}")
+            # Tags de suivi (valeurs exactes avec underscores)
+            if analysis.statistics.call_tags and len(analysis.statistics.call_tags) > 0:
+                tags_str = ", ".join(analysis.statistics.call_tags)
+                print(f"\n🏷️  Tags: {tags_str}")
         
-        print("\n" + "="*60)
+        print("="*70)
 
 
 def main():
@@ -222,7 +205,7 @@ def main():
     print("-" * 60)
     
     # Initialise le système
-    system = PostCallMonitoringSystem(model_name="gpt-4o-mini")
+    system = PostCallMonitoringSystem(model_name="gpt-4o")
     
     # Analyse d'un appel réel depuis Call Rounded
     call_id = "c4739276-0207-4bb4-b3e1-dabe55319c10"

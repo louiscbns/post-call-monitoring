@@ -33,7 +33,7 @@ cp env.example .env
 ROUNDED_API_KEY=votre_clé_api_rounded
 OPENAI_API_KEY=votre_clé_openai
 ANTHROPIC_API_KEY=votre_clé_anthropic (optionnel)
-GOOGLE_API_KEY=votre_clé_google (optionnel)
+GEMINI_API_KEY=votre_clé_google (optionnel)
             """)
         return
     
@@ -44,7 +44,7 @@ GOOGLE_API_KEY=votre_clé_google (optionnel)
         # Sélection du modèle
         model = st.selectbox(
             "Modèle LLM",
-            options=["gpt-4o-mini", "claude-3-5-sonnet", "gemini-2.0-flash"],
+            options=["gpt-4o", "claude-3-5-sonnet", "gemini-2.0-flash"],
             index=0,
             help="Choisissez le modèle à utiliser pour l'analyse"
         )
@@ -236,15 +236,26 @@ def display_analysis(analysis, call_id: str):
         st.markdown("---")
         st.subheader("📊 Statistiques enrichies")
         
+        # Afficher les erreurs en premier si présentes (valeurs exactes)
+        if analysis.statistics.failure_reasons and len(analysis.statistics.failure_reasons) > 0:
+            st.markdown("---")
+            st.subheader("❌ Erreurs détectées")
+            for reason in analysis.statistics.failure_reasons:
+                st.error(f"• {reason}")
+            
+            if analysis.statistics.failure_description:
+                st.write("**📄 Description détaillée:**")
+                st.warning(analysis.statistics.failure_description)
+        
         col1, col2 = st.columns(2)
         
         with col1:
             if analysis.statistics.call_reason:
-                st.write("**📞 Motif de l'appel:**")
-                st.info(analysis.statistics.call_reason.replace("_", " ").title())
+                st.write("**Motif de l'appel :**")
+                st.info(analysis.statistics.call_reason)
             
             if analysis.statistics.user_sentiment:
-                st.write("**😊 Sentiment utilisateur:**")
+                st.write("**Score de Satisfaction :**")
                 
                 # Couleur selon le sentiment
                 sentiment_emoji = {
@@ -256,23 +267,26 @@ def display_analysis(analysis, call_id: str):
                     "frustre": "🔴"
                 }
                 emoji = sentiment_emoji.get(analysis.statistics.user_sentiment, "⚪")
-                st.info(f"{emoji} {analysis.statistics.user_sentiment.replace('_', ' ').title()}")
+                st.info(f"{emoji} {analysis.statistics.user_sentiment}")
         
         with col2:
-            if analysis.statistics.failure_reasons:
-                st.write("**❌ Raisons d'échec:**")
-                for reason in analysis.statistics.failure_reasons:
-                    st.write(f"- `{reason.replace('_', ' ').title()}`")
-            
-            if analysis.statistics.failure_description:
-                st.write("**📄 Description de l'échec:**")
-                st.warning(analysis.statistics.failure_description)
+            pass  # Colonne vide pour équilibrer
         
         # Questions de l'appelant
         if analysis.statistics.user_questions:
             st.markdown("---")
             st.write("**❓ Questions posées par l'appelant (pour base de connaissances):**")
             st.text_area("", value=analysis.statistics.user_questions, height=100, disabled=True, label_visibility="collapsed")
+        
+        # Tags de suivi
+        if analysis.statistics.call_tags is not None and len(analysis.statistics.call_tags) > 0:
+            st.markdown("---")
+            st.write("**🏷️ Tags de suivi des informations échangées:**")
+            # Afficher les tags dans une grille (valeurs exactes)
+            tag_cols = st.columns(min(len(analysis.statistics.call_tags), 5))
+            for idx, tag in enumerate(analysis.statistics.call_tags):
+                with tag_cols[idx % len(tag_cols)]:
+                    st.success(f"✓ {tag}")
     
     # Affichage de la confiance avec barre de progression
     if analysis.confidence is not None:

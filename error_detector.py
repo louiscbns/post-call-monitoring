@@ -14,7 +14,7 @@ import json
 class ErrorDetector:
     """Détecte les erreurs dans les appels."""
     
-    def __init__(self, model_name: str = "gpt-4o-mini"):
+    def __init__(self, model_name: str = "gpt-4o"):
         self.llm = LLMClient(model_name)
         self.model_name = model_name
     

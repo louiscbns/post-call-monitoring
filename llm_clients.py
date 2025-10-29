@@ -1,7 +1,7 @@
 """Clients LLM pour les différents providers."""
 import os
 from typing import Dict, Any, List, Optional
-import google.generativeai as genai
+import requests
 from openai import OpenAI
 from anthropic import Anthropic
 
@@ -18,7 +18,8 @@ class LLMClient:
     def _initialize_client(self):
         """Initialise le client selon le modèle."""
         try:
-            if self.model_name == "gpt-4o-mini":
+            # Modèles OpenAI (gpt-4o, gpt-4.1, gpt-4.1-mini, gpt-5, gpt-5-mini)
+            if self.model_name in ["gpt-4o", "gpt-4.1", "gpt-4.1-mini", "gpt-5", "gpt-5-mini"]:
                 api_key = os.getenv("OPENAI_API_KEY")
                 if api_key:
                     # Nettoie la clé API des caractères d'escape potentiels
@@ -65,29 +66,14 @@ class LLMClient:
                 else:
                     print("⚠️  ANTHROPIC_API_KEY non configurée.")
                     self.client = None
+            # Modèles Google Gemini (API REST directe)
             elif self.model_name.startswith("gemini"):
-                api_key = os.getenv("GOOGLE_API_KEY")
+                # Support des deux noms de variables d'environnement
+                api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GEMINI_API_KEY")
                 if api_key:
-                    api_key = api_key.strip()
-                    # Temporairement retire les variables proxy pour éviter les erreurs
-                    old_proxies = {
-                        'http_proxy': os.environ.pop('HTTP_PROXY', None),
-                        'https_proxy': os.environ.pop('HTTPS_PROXY', None),
-                        'all_proxy': os.environ.pop('ALL_PROXY', None)
-                    }
-                    try:
-                        genai.configure(api_key=api_key)
-                        self.client = "gemini_configured"
-                    finally:
-                        # Restaure les variables d'environnement
-                        if old_proxies['http_proxy']:
-                            os.environ['HTTP_PROXY'] = old_proxies['http_proxy']
-                        if old_proxies['https_proxy']:
-                            os.environ['HTTPS_PROXY'] = old_proxies['https_proxy']
-                        if old_proxies['all_proxy']:
-                            os.environ['ALL_PROXY'] = old_proxies['all_proxy']
+                    self.client = api_key.strip()
                 else:
-                    print("⚠️  GOOGLE_API_KEY non configurée.")
+                    print("⚠️  GEMINI_API_KEY ou GEMINI_API_KEY non configurée.")
                     self.client = None
         except Exception as e:
             print(f"⚠️  Erreur lors de l'initialisation du client LLM: {e}")
@@ -105,7 +91,8 @@ class LLMClient:
             return self._generate_mock(prompt, system_prompt, kwargs.get("context"))
         
         try:
-            if self.model_name == "gpt-4o-mini":
+            # Modèles OpenAI
+            if self.model_name in ["gpt-4o", "gpt-4.1", "gpt-4.1-mini", "gpt-5", "gpt-5-mini"]:
                 return self._generate_openai(prompt, system_prompt, **kwargs)
             elif self.model_name == "claude-3-5-sonnet":
                 return self._generate_anthropic(prompt, system_prompt, **kwargs)
@@ -238,11 +225,21 @@ class LLMClient:
             messages.append({"role": "system", "content": system_prompt})
         messages.append({"role": "user", "content": prompt})
         
-        response = self.client.chat.completions.create(
-            model=self.model_name,
-            messages=messages,
-            temperature=kwargs.get("temperature", 0.3)
-        )
+        # Les modèles gpt-5 et gpt-5-mini utilisent reasoning_effort et verbosity
+        # Pour les autres modèles, on utilise temperature
+        request_params = {
+            "model": self.model_name,
+            "messages": messages
+        }
+        
+        # Pour gpt-5 et gpt-5-mini, utiliser reasoning_effort et verbosity
+        if self.model_name in ["gpt-5", "gpt-5-mini"]:
+            request_params["reasoning_effort"] = kwargs.get("reasoning_effort", "minimal")
+            request_params["verbosity"] = kwargs.get("verbosity", "low")
+        else:
+            request_params["temperature"] = kwargs.get("temperature", 0.3)
+        
+        response = self.client.chat.completions.create(**request_params)
         return response.choices[0].message.content
     
     def _generate_anthropic(self, prompt: str, system_prompt: str, **kwargs) -> str:
@@ -257,19 +254,133 @@ class LLMClient:
         return response.content[0].text
     
     def _generate_google(self, prompt: str, system_prompt: str, **kwargs) -> str:
-        """Génère avec Google Gemini."""
-        from google.generativeai import GenerativeModel
+        """Génère avec Google Gemini via l'API REST."""
+        api_key = self.client
+        if not api_key:
+            raise RuntimeError("GEMINI_API_KEY non configurée")
         
-        model = GenerativeModel(self.model_name)
-        
+        # Construction du prompt complet
         full_prompt = f"{system_prompt}\n\n{prompt}" if system_prompt else prompt
         
-        response = model.generate_content(
-            full_prompt,
-            generation_config={
-                "temperature": kwargs.get("temperature", 0.3),
-                "max_output_tokens": kwargs.get("max_tokens", 4096)
+        # URL de l'API Gemini REST
+        # Mapper les noms de modèles aux modèles API disponibles
+        model_map = {
+            "gemini-1.5-flash": "gemini-1.5-flash",
+            "gemini-2.0-flash": "gemini-2.0-flash",
+            "gemini-2.5-flash": "gemini-2.5-flash",
+        }
+        api_model = model_map.get(self.model_name, "gemini-1.5-flash")
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{api_model}:generateContent"
+        
+        # Headers
+        headers = {
+            "Content-Type": "application/json",
+            "x-goog-api-key": api_key
+        }
+        
+        # Configuration de génération
+        # Pour Gemini, augmenter la limite minimale si elle est trop faible
+        # Les modèles récents comme gemini-2.5-flash peuvent générer des réponses plus longues
+        max_tokens_requested = kwargs.get("max_tokens", 8192)
+        max_tokens_gemini = max(max_tokens_requested, 2048) if max_tokens_requested < 2048 else max_tokens_requested
+        
+        payload = {
+                "contents": [{
+                    "parts": [{"text": full_prompt}]
+                }],
+                "generationConfig": {
+                    "temperature": kwargs.get("temperature", 0.3),
+                    "maxOutputTokens": max_tokens_gemini
+                },
+                "safetySettings": [
+                    {
+                        "category": "HARM_CATEGORY_HARASSMENT",
+                        "threshold": "BLOCK_NONE"
+                    },
+                    {
+                        "category": "HARM_CATEGORY_HATE_SPEECH",
+                        "threshold": "BLOCK_NONE"
+                    },
+                    {
+                        "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+                        "threshold": "BLOCK_NONE"
+                    },
+                    {
+                        "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
+                        "threshold": "BLOCK_NONE"
+                    }
+                ]
             }
-        )
-        return response.text
+        
+        # Appel API REST
+        try:
+            response = requests.post(url, json=payload, headers=headers, timeout=60)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            raise RuntimeError(f"Erreur lors de l'appel API Gemini: {e}")
+        
+        # Extraction de la réponse
+        data = response.json()
+        
+        if "candidates" not in data or not data["candidates"]:
+            # Afficher plus d'informations pour le débogage
+            error_msg = f"La réponse de Gemini est vide. Réponse complète: {data}"
+            if "promptFeedback" in data:
+                error_msg += f" Prompt feedback: {data['promptFeedback']}"
+            raise ValueError(error_msg)
+        
+        candidate = data["candidates"][0]
+        
+        # Vérifier le finishReason
+        finish_reason = candidate.get("finishReason", "UNKNOWN")
+        if finish_reason not in ["STOP", "MAX_TOKENS"]:
+            # Ajouter plus de contexte sur le finishReason
+            error_details = f"finishReason: {finish_reason}"
+            if "safetyRatings" in candidate:
+                error_details += f", safetyRatings: {candidate['safetyRatings']}"
+            raise ValueError(f"Génération bloquée ou incomplète ({error_details})")
+        
+        if "content" not in candidate:
+            raise ValueError(f"Pas de 'content' dans le candidate. Candidate complet: {candidate}")
+        
+        content = candidate["content"]
+        
+        # Vérifier si parts existe (peut être absent si bloqué ou si réponse vide)
+        if "parts" not in content or not content.get("parts"):
+            # Si finishReason est MAX_TOKENS et qu'il n'y a pas de parts, 
+            # cela peut signifier que la réponse était trop longue même avec la limite augmentée
+            # ou que le format de réponse est différent
+            error_details = f"Pas de 'parts' dans le content. FinishReason: {finish_reason}"
+            if finish_reason == "MAX_TOKENS":
+                error_details += " (Limite de tokens atteinte - essayez d'augmenter max_tokens)"
+            if "safetyRatings" in candidate:
+                error_details += f", safetyRatings: {candidate['safetyRatings']}"
+            error_details += f", content: {content}"
+            # Pour MAX_TOKENS, essayer une fois de plus avec une limite plus élevée
+            if finish_reason == "MAX_TOKENS" and max_tokens_gemini < 8192:
+                # Essayer avec une limite plus élevée
+                payload["generationConfig"]["maxOutputTokens"] = 8192
+                retry_response = requests.post(url, json=payload, headers=headers, timeout=60)
+                retry_response.raise_for_status()
+                retry_data = retry_response.json()
+                if "candidates" in retry_data and retry_data["candidates"]:
+                    retry_candidate = retry_data["candidates"][0]
+                    if "content" in retry_candidate and "parts" in retry_candidate["content"]:
+                        parts = retry_candidate["content"]["parts"]
+                        if parts and len(parts) > 0 and isinstance(parts[0], dict) and "text" in parts[0]:
+                            return parts[0]["text"].strip()
+            raise ValueError(f"Pas de 'parts' dans le content - peut-être bloqué par safety filters ou erreur API ({error_details})")
+        
+        parts = content["parts"]
+        if not parts or len(parts) == 0:
+            raise ValueError("Liste 'parts' vide")
+        
+        if not isinstance(parts[0], dict) or "text" not in parts[0]:
+            raise ValueError("Format de 'parts[0]' inattendu - pas de 'text'")
+        
+        text = parts[0]["text"].strip()
+        if not text:
+            raise ValueError("Texte vide dans la réponse Gemini")
+        
+        return text
 
