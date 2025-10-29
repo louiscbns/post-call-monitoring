@@ -78,6 +78,9 @@ class PostCallMonitoringSystem:
             print(f"Type: {initial_analysis.error_type}")
             print(f"Confiance: {initial_analysis.confidence}")
             
+            # Extraction des statistiques (même si pas d'erreur) - intégré dans detailed_analyzer
+            statistics = self.detailed_analyzer._extract_statistics(request)
+            
             if not initial_analysis.has_error:
                 # Pas d'erreur détectée, analyse basique
                 return DetailedAnalysis(
@@ -87,7 +90,9 @@ class PostCallMonitoringSystem:
                     steps=[],
                     tags=[],
                     summary="Aucun problème détecté dans cet appel.",
-                    recommendations=[]
+                    recommendations=[],
+                    confidence=initial_analysis.confidence,
+                    statistics=statistics
                 )
             
             # ÉTAPE 2: Analyse détaillée conditionnelle
@@ -172,9 +177,41 @@ class PostCallMonitoringSystem:
         print(f"⚠️  Problème détecté: {analysis.problem_detected}")
         print(f"🏷️  Type: {analysis.problem_type}")
         print(f"🏷️  Tags: {', '.join(analysis.tags)}")
+        if analysis.confidence is not None:
+            confidence_pct = int(analysis.confidence * 100)
+            print(f"🎯 Confiance: {confidence_pct}%")
         
         print(f"\n📝 Résumé:")
         print(f"   {analysis.summary}")
+        
+        # Afficher les statistiques enrichies
+        if analysis.statistics:
+            print("\n" + "-"*60)
+            print("📊 STATISTIQUES ENRICHIES")
+            print("-"*60)
+            
+            if analysis.statistics.call_reason:
+                print(f"📞 Motif de l'appel: {analysis.statistics.call_reason}")
+            
+            if analysis.statistics.user_sentiment:
+                print(f"😊 Sentiment utilisateur: {analysis.statistics.user_sentiment}")
+            
+            if analysis.statistics.user_questions:
+                print(f"\n❓ Questions posées par l'appelant:")
+                # Afficher chaque question sur une ligne
+                questions_lines = analysis.statistics.user_questions.split('\n')
+                for q in questions_lines:
+                    if q.strip():
+                        print(f"   • {q.strip()}")
+            
+            if analysis.statistics.failure_reasons:
+                print(f"\n❌ Raisons d'échec (multiselect):")
+                for reason in analysis.statistics.failure_reasons:
+                    print(f"   • {reason}")
+            
+            if analysis.statistics.failure_description:
+                print(f"\n📄 Description de l'échec:")
+                print(f"   {analysis.statistics.failure_description}")
         
         print("\n" + "="*60)
 

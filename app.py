@@ -57,23 +57,33 @@ GOOGLE_API_KEY=votre_clé_google (optionnel)
     
     # Zone de saisie du call_id
     st.header("🔍 Analyser un appel")
+    
+    # Initialiser le session_state pour le call_id si nécessaire
+    if "call_id_input" not in st.session_state:
+        st.session_state.call_id_input = ""
+    
+    # Vérifier si le bouton "Utiliser un exemple" est cliqué AVANT de créer le widget
+    use_example_button = st.button("📋 Utiliser un exemple")
+    if use_example_button:
+        example_id = "c4739276-0207-4bb4-b3e1-dabe55319c10"
+        st.session_state.call_id_input = example_id
+        st.rerun()
+    
     col1, col2 = st.columns([3, 1])
     
     with col1:
+        # Utiliser la valeur de session_state comme valeur initiale
         call_id = st.text_input(
             "Call ID",
+            value=st.session_state.call_id_input,
             placeholder="Ex: c4739276-0207-4bb4-b3e1-dabe55319c10",
-            help="Entrez l'ID de l'appel à analyser"
+            help="Entrez l'ID de l'appel à analyser",
+            key="call_id_input"
         )
     
     with col2:
         st.markdown("<br>", unsafe_allow_html=True)  # Espacement vertical
         analyze_button = st.button("🚀 Analyser", type="primary", use_container_width=True)
-    
-    # Bouton pour afficher un exemple
-    if st.button("📋 Utiliser un exemple"):
-        call_id = "c4739276-0207-4bb4-b3e1-dabe55319c10"
-        st.rerun()
     
     st.markdown("---")
     
@@ -173,7 +183,7 @@ def display_analysis(analysis, call_id: str):
     st.header("📊 Résultats de l'analyse")
     
     # Métriques principales
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     
     with col1:
         if analysis.problem_detected:
@@ -186,6 +196,25 @@ def display_analysis(analysis, call_id: str):
     
     with col3:
         st.metric("📊 Tags", len(analysis.tags))
+    
+    with col4:
+        if analysis.confidence is not None:
+            # Affiche la confiance avec un indicateur visuel
+            confidence_pct = int(analysis.confidence * 100)
+            # Détermine la couleur selon le niveau de confiance
+            if analysis.confidence >= 0.8:
+                delta_color = "normal"
+                confidence_label = f"{confidence_pct}%"
+            elif analysis.confidence >= 0.5:
+                delta_color = "off"
+                confidence_label = f"{confidence_pct}%"
+            else:
+                delta_color = "inverse"
+                confidence_label = f"{confidence_pct}%"
+            
+            st.metric("🎯 Confiance", confidence_label, delta=None, delta_color=delta_color)
+        else:
+            st.metric("🎯 Confiance", "N/A", delta=None)
     
     st.markdown("---")
     
@@ -202,6 +231,72 @@ def display_analysis(analysis, call_id: str):
             with tag_cols[idx % len(tag_cols)]:
                 st.markdown(f"- `{tag}`")
     
+    # Statistiques enrichies
+    if analysis.statistics:
+        st.markdown("---")
+        st.subheader("📊 Statistiques enrichies")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            if analysis.statistics.call_reason:
+                st.write("**📞 Motif de l'appel:**")
+                st.info(analysis.statistics.call_reason.replace("_", " ").title())
+            
+            if analysis.statistics.user_sentiment:
+                st.write("**😊 Sentiment utilisateur:**")
+                
+                # Couleur selon le sentiment
+                sentiment_emoji = {
+                    "positif": "🟢",
+                    "satisfait": "🟢",
+                    "neutre": "🟡",
+                    "confus": "🟡",
+                    "negatif": "🔴",
+                    "frustre": "🔴"
+                }
+                emoji = sentiment_emoji.get(analysis.statistics.user_sentiment, "⚪")
+                st.info(f"{emoji} {analysis.statistics.user_sentiment.replace('_', ' ').title()}")
+        
+        with col2:
+            if analysis.statistics.failure_reasons:
+                st.write("**❌ Raisons d'échec:**")
+                for reason in analysis.statistics.failure_reasons:
+                    st.write(f"- `{reason.replace('_', ' ').title()}`")
+            
+            if analysis.statistics.failure_description:
+                st.write("**📄 Description de l'échec:**")
+                st.warning(analysis.statistics.failure_description)
+        
+        # Questions de l'appelant
+        if analysis.statistics.user_questions:
+            st.markdown("---")
+            st.write("**❓ Questions posées par l'appelant (pour base de connaissances):**")
+            st.text_area("", value=analysis.statistics.user_questions, height=100, disabled=True, label_visibility="collapsed")
+    
+    # Affichage de la confiance avec barre de progression
+    if analysis.confidence is not None:
+        st.markdown("---")
+        st.subheader("🎯 Niveau de confiance")
+        
+        confidence_pct = int(analysis.confidence * 100)
+        confidence_color = "🟢" if analysis.confidence >= 0.8 else "🟡" if analysis.confidence >= 0.5 else "🔴"
+        
+        col1, col2 = st.columns([3, 1])
+        with col1:
+            st.progress(analysis.confidence, text=f"{confidence_color} {confidence_pct}%")
+        with col2:
+            st.write(f"**{confidence_pct}%**")
+        
+        # Légende
+        with st.expander("ℹ️ À propos de la confiance"):
+            st.markdown("""
+            La confiance indique le niveau de certitude du système dans la détection du problème :
+            - **🟢 80-100%** : Très confiant - Le problème est clairement identifié
+            - **🟡 50-79%** : Modérément confiant - Le problème est probablement présent
+            - **🔴 0-49%** : Peu confiant - L'analyse nécessite une vérification manuelle
+            """)
+    
     # Détails supplémentaires
     if analysis.problem_detected:
         st.markdown("---")
@@ -215,8 +310,10 @@ def display_analysis(analysis, call_id: str):
                 "call_id": call_id,
                 "problem_type": analysis.problem_type,
                 "problem_detected": analysis.problem_detected,
+                "confidence": analysis.confidence,
                 "tags": analysis.tags,
-                "summary": analysis.summary
+                "summary": analysis.summary,
+                "statistics": analysis.statistics.dict() if analysis.statistics else None
             }
             st.json(data_dict)
     
@@ -244,9 +341,11 @@ def export_results(analysis, call_id: str):
         "timestamp": datetime.now().isoformat(),
         "problem_detected": analysis.problem_detected,
         "problem_type": analysis.problem_type,
+        "confidence": analysis.confidence,
         "tags": analysis.tags,
         "summary": analysis.summary,
-        "recommendations": analysis.recommendations
+        "recommendations": analysis.recommendations,
+        "statistics": analysis.statistics.dict() if analysis.statistics else None
     }
     
     # Crée le JSON

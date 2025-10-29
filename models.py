@@ -63,7 +63,16 @@ class AnalysisStep(BaseModel):
     step_number: int
     description: str
     questions: List[Question]
-    
+
+
+class CallStatistics(BaseModel):
+    """Statistiques enrichies de l'appel."""
+    call_reason: Optional[str] = None  # Motif de l'appel (avec "autre" comme option)
+    user_questions: Optional[str] = None  # Questions posées par l'appelant (pour KB)
+    user_sentiment: Optional[str] = None  # Sentiment utilisateur
+    failure_reasons: Optional[List[str]] = None  # Raisons d'échec (multiselect) - null si pas d'échec
+    failure_description: Optional[str] = None  # Raison d'échec (texte) - null si pas d'échec
+
 
 class DetailedAnalysis(BaseModel):
     """Analyse détaillée d'un appel."""
@@ -74,6 +83,8 @@ class DetailedAnalysis(BaseModel):
     tags: List[str]
     summary: str
     recommendations: List[str]
+    confidence: Optional[float] = None  # Confiance de la détection (0.0 à 1.0)
+    statistics: Optional[CallStatistics] = None  # Statistiques enrichies
 
 
 class InitialAnalysis(BaseModel):
