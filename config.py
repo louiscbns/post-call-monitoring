@@ -27,61 +27,61 @@ class Config:
     
     # Tags d'erreurs avec description - pour génération automatique du prompt
     ERROR_TAGS: list = [
-        {"tag": "patient_non_trouve", "description": "Le patient recherché n'a pas été trouvé dans la base de données"},
-        {"tag": "praticien_non_trouve", "description": "Le praticien/chirurgien recherché n'a pas été trouvé"},
-        {"tag": "operation_non_trouvee", "description": "L'opération/chirurgie recherchée n'a pas été trouvée"},
-        {"tag": "pas_de_disponibilites", "description": "Aucune disponibilité trouvée pour la période demandée"},
-        {"tag": "erreur_booking", "description": "Erreur lors de la réservation/booking d'un rendez-vous"},
-        {"tag": "erreur_extraction_entite", "description": "Erreur lors de l'extraction d'entités depuis la conversation"},
-        {"tag": "erreur_tool", "description": "Erreur lors de l'exécution d'un outil/tool"},
-        {"tag": "entity_detection_erreur", "description": "Erreur lors de la détection d'entités (nom, date, etc.)"},
-        {"tag": "informations_manquantes", "description": "Informations requises manquantes pour compléter l'action"},
-        {"tag": "autres", "description": "Autre type d'erreur non catégorisée"}
+        {"tag": "patient_non_trouve"},
+        {"tag": "praticien_non_trouve"},
+        {"tag": "operation_non_trouvee"},
+        {"tag": "pas_de_disponibilites"},
+        {"tag": "erreur_booking"},
+        {"tag": "erreur_extraction_entite"},
+        {"tag": "erreur_tool"},
+        {"tag": "entity_detection_erreur"},
+        {"tag": "informations_manquantes"},
+        {"tag": "autres"}
     ]
     
     # Motifs d'appel avec description
     CALL_REASONS: list = [
-        {"reason": "get_appointment_info", "description": "Demander des informations sur un rendez-vous existant"},
-        {"reason": "book_appointment", "description": "Réserver un nouveau rendez-vous"},
-        {"reason": "cancel_appointment", "description": "Annuler un rendez-vous"},
-        {"reason": "move_appointment", "description": "Déplacer/Modifier un rendez-vous existant"},
-        {"reason": "confirm_appointment", "description": "Confirmer un rendez-vous"},
-        {"reason": "other_requests", "description": "Autre type de demande non liée au booking"}
+        {"reason": "get_appointment_info"},
+        {"reason": "book_appointment"},
+        {"reason": "cancel_appointment"},
+        {"reason": "move_appointment"},
+        {"reason": "confirm_appointment"},
+        {"reason": "other_requests"}
     ]
     
     # Sentiments utilisateur avec description
     USER_SENTIMENTS: list = [
-        {"sentiment": "positif", "description": "L'appelant exprime des sentiments positifs, satisfaction, enthousiasme"},
-        {"sentiment": "neutre", "description": "L'appelant garde un ton neutre, ni positif ni négatif"},
-        {"sentiment": "negatif", "description": "L'appelant exprime de la frustration, mécontentement ou insatisfaction"},
-        {"sentiment": "frustre", "description": "L'appelant est frustré par la situation ou le service"},
-        {"sentiment": "satisfait", "description": "L'appelant est satisfait de l'interaction et du service"},
-        {"sentiment": "confus", "description": "L'appelant semble confus, besoin de clarification ou d'explication"}
+        {"sentiment": "positif"},
+        {"sentiment": "neutre"},
+        {"sentiment": "negatif"},
+        {"sentiment": "frustre"},
+        {"sentiment": "satisfait"},
+        {"sentiment": "confus"}
     ]
     
     # Tags de suivi des informations échangées avec description
     CALL_TAGS: list = [
-        {"tag": "nom_du_chirurgien", "description": "Le nom du chirurgien a été mentionné ou demandé"},
-        {"tag": "date_de_chirurgie", "description": "La date de la chirurgie a été mentionnée ou discutée"},
-        {"tag": "intitule_chirurgie", "description": "L'intitulé/nom de la chirurgie a été mentionné"},
-        {"tag": "anticoagulants", "description": "Les anticoagulants ont été mentionnés ou discutés"},
-        {"tag": "disponibilites_enoncees", "description": "Des disponibilités ont été énoncées/présentées à l'appelant"},
-        {"tag": "patient_trouve", "description": "Le patient a été trouvé avec succès dans la base de données"},
-        {"tag": "patient_non_trouve", "description": "Le patient n'a pas été trouvé (erreur ou échec de recherche)"},
-        {"tag": "nom", "description": "Le nom du patient a été mentionné, donné ou demandé"},
-        {"tag": "prenom", "description": "Le prénom du patient a été mentionné, donné ou demandé"},
-        {"tag": "date_de_naissance", "description": "La date de naissance a été mentionnée, donnée ou demandée"},
-        {"tag": "email", "description": "L'email a été mentionné, donné ou demandé"},
-        {"tag": "adresse", "description": "L'adresse a été mentionnée, donnée ou demandée"},
-        {"tag": "rdv_confirme", "description": "Un rendez-vous a été confirmé pendant l'appel"},
-        {"tag": "appel_transfere", "description": "L'appel a été transféré à un autre service ou agent"}
+        {"tag": "nom_du_chirurgien"},
+        {"tag": "date_de_chirurgie"},
+        {"tag": "intitule_chirurgie"},
+        {"tag": "anticoagulants"},
+        {"tag": "disponibilites_enoncees"},
+        {"tag": "patient_trouve"},
+        {"tag": "patient_non_trouve"},
+        {"tag": "nom"},
+        {"tag": "prenom"},
+        {"tag": "date_de_naissance"},
+        {"tag": "email"},
+        {"tag": "adresse"},
+        {"tag": "rdv_confirme"},
+        {"tag": "appel_transfere"}
     ]
     
     # Structure des questions pour l'extraction - un appel LLM par question
     EXTRACTION_QUESTIONS: list = [
         {
             "name": "call_reason",
-            "description": "Identifie le motif principal de l'appel",
+            "description": "Motif principal exprimé par l'appelant (le besoin initial qui justifie l'appel). Choisir UNE seule valeur la plus représentative du but de l'appel, en se basant uniquement sur ce que l'appelant demande ou cherche à accomplir.",
             "options": CALL_REASONS,  # Utilise la liste Config
             "response_type": "select",  # Single choice
             "required": True,
@@ -90,7 +90,7 @@ class Config:
         },
         {
             "name": "user_sentiment",
-            "description": "Sentiment global de l'appelant durant la conversation",
+            "description": "Sentiment global de l'appelant (ton/attitude) sur l'ensemble de l'appel. Se concentrer sur l'appelant, pas l'agent. Déduire à partir du vocabulaire, de la politesse, de la frustration, des exclamations et du contexte.",
             "options": USER_SENTIMENTS,
             "response_type": "select",
             "required": False,
@@ -99,7 +99,7 @@ class Config:
         },
         {
             "name": "failure_reasons",
-            "description": "Liste des tags d'erreur si un échec est détecté (tools échoués ou erreurs)",
+            "description": "Tous les tags d'erreur applicables si un échec est survenu (panne d'outil, information introuvable, champ manquant, etc.). Retourner une liste (possiblement vide). Inclure chaque cause pertinente détectée dans le transcript ou dans les résultats d'outils.",
             "options": ERROR_TAGS,
             "response_type": "multiselect",  # Multiple choice
             "required": False,
@@ -109,7 +109,7 @@ class Config:
         },
         {
             "name": "failure_description",
-            "description": "Description textuelle détaillée de l'échec si un échec est détecté",
+            "description": "Brève description factuelle et précise de l'échec s'il y en a un (quoi, où, pourquoi si identifiable). Mentionner l'outil ou l'information en cause, l'étape concernée et le symptôme observé (ex: 'patient non trouvé', 'timeout outil X').",
             "options": None,  # Pas de liste d'options, réponse libre
             "response_type": "text",
             "required": False,
@@ -118,7 +118,7 @@ class Config:
         },
         {
             "name": "call_tags",
-            "description": "Tags indiquant quelles informations ont été échangées/demandées/presentées pendant l'appel",
+            "description": "Tous les tags décrivant les informations concrètes échangées/presentées pendant l'appel (ex: champs patient, éléments médicaux, disponibilités). Inclure chaque tag objectivement mentionné ou confirmé. Toujours une liste (éventuellement vide).",
             "options": CALL_TAGS,
             "response_type": "multiselect",
             "required": True,
@@ -128,7 +128,7 @@ class Config:
         },
         {
             "name": "user_questions",
-            "description": "Liste des questions posées UNIQUEMENT par l'appelant (rôle 'user'), IGNORE les questions posées par l'agent (rôle 'assistant'). Une question par ligne.",
+            "description": "Liste exhaustive des questions/requests d'information posées UNIQUEMENT par l'appelant (rôle 'user'). Ne pas inclure les questions de l'agent. Restituer une question par ligne, en citant ou reformulant clairement l'intention de l'appelant.",
             "options": None,  # Pas de liste d'options, extraction libre
             "response_type": "text_multiline",  # Texte multiligne
             "required": False,
