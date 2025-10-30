@@ -14,20 +14,35 @@ load_dotenv()
 CALL_IDS = [
     "fb96d81d-fef2-4f68-b438-07a9fe97e65e",
     "c4739276-0207-4bb4-b3e1-dabe55319c10",
-    "7adeb607-390e-44c2-a974-47c848f35dfe",
-    "37ea75da-8101-4005-99f9-96d793f1ca27",
-    "9cfca680-334b-42c4-ae51-6f45f94fe436",
-    "76dec7d1-7c2c-46e5-a73c-5820dd74e0b9",
-    "fa789f5d-8665-46ca-ab36-e26b360642a1",
-    "16510542-f4fa-46ae-b16a-6ba15f5a45da",
     "4289531f-7cb6-4c33-b827-bcc33e4ad871",
-    "8cd5d571-0507-45db-9481-6200a89d379f"
+    "fdec1da2-6e1f-40c9-87bd-264d36a3bc69",
+    "b011a6a4-ed20-46d6-863c-5e3d4f17519c",
+    "3cd3dbb4-4267-4bc1-bd3c-9aedbc49a3cc",
+    "3037d2bd-0522-4420-a73c-9d4a3f0a9474",
+    "942e89b0-ff9a-4874-b957-b7a349b1d526",
+    "f5755fff-a916-477c-a914-ad49bb43651c",
+    "84bbe5e4-d4ba-4d79-9975-ad20107a33b6",
+    "7f84501e-6191-48bb-96bb-cf2f5035efd8",
+    "5f7c96bd-4ca4-46ba-b64c-df6c92cc114b",
+    "2044eb7e-e0e6-4ac8-9cda-a8352fc2fc27",
+    "9cd46ce9-287f-4c72-aadd-20090f35968e",
+    "21226cab-7ff4-482f-8698-39519a73f154",
+    "762c9f32-981e-4546-987c-40bebd0aacb0",
+    "cf698647-cc1c-49a1-9b81-5fe3718e5c80",
+    "d42e46a4-04fe-4c23-85f6-adc87b0ba563",
+    "a2fc9f60-9c86-46d3-92b4-41f5c570a706",
+    "c12f9e9e-de7c-47af-a163-3c678e325543",
+    "17a7ec7b-16ea-48f2-8c86-a6feacadfd62",
+    "24b4b9ea-ef6f-4d70-9e40-8e42577b5bbc",
+    "780ca9b2-5480-4ee4-a300-7a7f5d0f2d03",
+    "a2b944c1-8c64-4e18-925e-8e986f6b9e1d",
+    "60f3f49b-35f3-4d9b-a1cc-d6c66726b20a",
+    "7a5f85b4-851f-42c5-aebb-53b3aa02972f",
+    "7a5f85b4-851f-42c5-aebb-53b3aa02972f"
 ]
 
 # Liste des modèles à tester
 MODELS = [
-    "gemini-2.0-flash",
-    "gpt-4.1",
     "gpt-4.1-mini"
 ]
 

@@ -234,7 +234,7 @@ class LLMClient:
         
         # Pour gpt-5 et gpt-5-mini, utiliser reasoning_effort et verbosity
         if self.model_name in ["gpt-5", "gpt-5-mini"]:
-            request_params["reasoning_effort"] = kwargs.get("reasoning_effort", "minimal")
+            request_params["reasoning_effort"] = kwargs.get("reasoning_effort", "low")
             request_params["verbosity"] = kwargs.get("verbosity", "low")
         else:
             request_params["temperature"] = kwargs.get("temperature", 0.3)
